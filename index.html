@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title></title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link href="https://fonts.googleapis.com/css?family=Montserrat:300,500" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/sweetalert2/6.6.2/sweetalert2.min.css" integrity="sha256-1Dd1LfK9ogDaOMgl1HC3rF4/7NwlG4w5K0brANd/WXQ=" crossorigin="anonymous">
+        <style>
+            html {
+                font-size: 2em;
+                min-height: 100%;
+                background: black;
+                color: white;
+            }
+            body {
+                font-family: 'Montserrat', sans-serif;
+                margin: 0;
+                padding: 0;
+            }
+            h1,h2,h3,h4,h5,h6 {
+                margin-bottom: 0;
+                margin-top: 0;
+                font-weight: bolder;
+            }
+            p {
+                font-weight: lighter;
+                margin: 0;
+                padding: 0;
+            }
+            form.search {
+                max-width: 100%;
+                padding: 10px 0;
+                padding-bottom: 30px;
+            }
+            div#app {
+                max-width: 100%;
+                padding: 15px;
+                text-align: left;
+            }
+            input[type="text"] {
+                background: transparent;
+                border: 0;
+                border-bottom: 2px solid white;
+                padding: 5px;
+                font-size: 35px;
+                color: #ffffff;
+                width: calc(100% - 15px);
+                display: block;
+                font-weight: lighter;
+            }
+            input::-webkit-input-placeholder,
+            textarea::-webkit-input-placeholder {
+                color: #ccc;
+                text-shadow: none;
+                -webkit-text-fill-color: initial;
+            }
+            input[type="button"] {
+                background: transparent;
+                border: 2px solid #ffffff;
+                padding: 5px;
+                font-size: 20px;
+                color: #ffffff;
+            }
+            .playerdata > div {
+                margin: 15px 0;
+            }
+            .fade-enter-active, .fade-leave-active {
+                transition: opacity .5s
+            }
+            .fade-enter, .fade-leave-to /* .fade-leave-active in <2.1.8 */ {
+                opacity: 0
+            }
+            [primary]{
+                color: white;
+            }
+            [secondary]{
+                color: grey;
+            }
+            [M],[K],[PERCENT]{
+                font-weight: bolder;
+            }
+            [M] {
+                color: #4ca2bd;
+            }
+            [K] {
+                color: #da80f0;
+            }
+            [PERCENT] {
+                color: #00ffba;
+            }
+            </style>
+    </head>
+    <body>
+    <div id="app">
+        <div v-if="enabled">
+            <form class="search" onsubmit="return false;" v-on:submit="Fetch">                
+                <input type="text" v-model="message" autofocus>
+                <!--<span v-if="message">
+                    <input type="button" value="submit" v-on:click="Fetch">
+                </span>-->
+            </form>
+            <transition name="fade">
+                <div class="playerdata" v-if="playerData">
+                    <div primary v-if="playerData.nickname">
+                        <h2>Nickname</h2><p>{{ playerData.nickname }}</p>
+                    </div>
+                    <div primary v-if="playerData.statistics">
+                        <h2>Battles</h2><p>{{ Math.round((playerData.statistics.all.wins / 1000) * 10) / 10 }}<span K>K</span></p>
+                    </div>
+                    <div primary v-if="playerData.statistics">
+                        <h2>Experience</h2><p>{{ Math.round((playerData.statistics.all.xp / 1000000) * 10) / 10 }}<span M>M</span></p>
+                    </div>
+                    <div primary v-if="playerData.statistics">
+                        <h2>Global Rating</h2><p>{{ Math.round((playerData.global_rating / 1000) * 10) / 10 }}<span K>K</span></p>
+                    </div>
+                    <div secondary v-if="playerData.statistics">
+                        <h2>Survival rate</h2><p>{{ Math.round((playerData.statistics.all.survived_battles / playerData.statistics.all.battles) * 100)}}<span PERCENT>%</span></p>
+                    </div>
+                    <div secondary v-if="playerData.statistics">
+                        <h2>Damage dealt</h2><p>{{ Math.round((playerData.statistics.all.damage_dealt / 1000000) * 10) / 10 }}<span M>M</span></p>
+                    </div>
+                </div>
+            </transition>         
+        </div>
+    </div>
+    <script src="https://unpkg.com/vue"></script>
+    <script src="https://cdn.jsdelivr.net/sweetalert2/6.6.2/sweetalert2.min.js" integrity="sha256-5DSTcjlCWf/JPl/ULIJojOlV9Rbzk0xgD3abApqBGIY=" crossorigin="anonymous"></script>
+    <script>
+
+        const app = new Vue ({
+            el: "#app",
+            data: {
+                enabled: true,
+                playerData: "",
+                message: "",
+            },
+            methods: {
+                Fetch: () => {
+                    if (app.message){
+                        app.playerData = "";
+                        let accountID;
+                        fetch(`https://api.worldoftanks.eu/wot/account/list/?language=en&application_id=demo&search=${app.message}`)
+                            .then( response => response.json() )
+                            .then (response = (response) => { accountID = response.data[0].account_id; return response; } )
+                            .then( response => fetch( `https://api.worldoftanks.eu/wot/account/info/?application_id=demo&account_id=${response.data[0].account_id}` ) )
+                            .then( secondResponse => secondResponse.json() )
+                            .then( (parsedSecondResponse) => {
+                                app.playerData = parsedSecondResponse.data[accountID];
+                            })
+                            .catch( e => swal("Oh no", "The server could not find an account ID", "error") );
+                    } 
+                    else if (!app.message) {
+                        app.playerData = "";
+                        swal(
+                            "Oh no!",
+                            "The field does not contain anything",
+                            "error"
+                        );
+                    }
+                }
+            }
+        });
+    </script>
+    </body>
+</html>
