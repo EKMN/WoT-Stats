@@ -41,13 +41,16 @@
             input[type="text"] {
                 background: transparent;
                 border: 0;
-                border-bottom: 2px solid white;
+                border-bottom: 2px solid #484848;
                 padding: 5px;
                 font-size: 35px;
                 color: #ffffff;
                 width: calc(100% - 15px);
                 display: block;
                 font-weight: lighter;
+            }
+            input[type="text"]:focus {
+                border-bottom: 2px solid white;
             }
             input::-webkit-input-placeholder,
             textarea::-webkit-input-placeholder {
@@ -75,7 +78,8 @@
                 color: white;
             }
             [secondary]{
-                color: grey;
+                /*color: grey;*/
+                opacity: .5;
             }
             [M],[K],[PERCENT]{
                 font-weight: bolder;
@@ -106,7 +110,7 @@
                         <h2>Nickname</h2><p>{{ playerData.nickname }}</p>
                     </div>
                     <div primary v-if="playerData.statistics">
-                        <h2>Battles</h2><p>{{ Math.round((playerData.statistics.all.wins / 1000) * 10) / 10 }}<span K>K</span></p>
+                        <h2>Battles</h2><p>{{ Math.round((playerData.statistics.all.battles / 1000) * 10) / 10 }}<span K>K</span></p>
                     </div>
                     <div primary v-if="playerData.statistics">
                         <h2>Experience</h2><p>{{ Math.round((playerData.statistics.all.xp / 1000000) * 10) / 10 }}<span M>M</span></p>
@@ -142,13 +146,20 @@
                         let accountID;
                         fetch(`https://api.worldoftanks.eu/wot/account/list/?language=en&application_id=demo&search=${app.message}`)
                             .then( response => response.json() )
-                            .then (response = (response) => { accountID = response.data[0].account_id; return response; } )
+                            .then( (response) => { 
+                                if (response.status !== "ok") throw Error(`${response.error.code} <br> <span secondary>"${response.error.message}"</span>`);
+                                accountID = response.data[0].account_id; return response; 
+                            })
                             .then( response => fetch( `https://api.worldoftanks.eu/wot/account/info/?application_id=demo&account_id=${response.data[0].account_id}` ) )
                             .then( secondResponse => secondResponse.json() )
+                            .then( (response) => { 
+                            if (response.status !== "ok") throw Error(`${response.error.code} <br> <span secondary>${response.error.message}</span>`);
+                            return response; 
+                            })
                             .then( (parsedSecondResponse) => {
                                 app.playerData = parsedSecondResponse.data[accountID];
                             })
-                            .catch( e => swal("Oh no", "The server could not find an account ID", "error") );
+                            .catch( e => swal("Oh no", `ERROR CODE ${e.message}`, "error") );
                     } 
                     else if (!app.message) {
                         app.playerData = "";
