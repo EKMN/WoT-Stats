@@ -100,7 +100,7 @@
     <div id="app">
         <div v-if="enabled">
             <form class="search" onsubmit="return false;" v-on:submit="Fetch">                
-                <input type="text" v-model="message" autofocus>
+                <input type="text" v-model="message" v-on:blur="ClearInputs" autofocus>
                 <!--<span v-if="message">
                     <input type="button" value="submit" v-on:click="Fetch">
                 </span>-->
@@ -170,6 +170,9 @@
                             "error"
                         );
                     }
+                },
+                ClearInputs: () => {
+                    app.message = "";
                 }
             }
         });
