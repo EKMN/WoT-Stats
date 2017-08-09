@@ -94,11 +94,14 @@
             [PERCENT] {
                 color: #00ffba;
             }
+            [v-cloak] {
+                display: none;
+            }
             </style>
     </head>
     <body>
     <div id="app">
-        <div v-if="enabled">
+        <div v-if="enabled" v-cloak>
             <form class="search" onsubmit="return false;" v-on:submit="Fetch">                
                 <input type="text" v-model="message" v-on:blur="ClearInputs" autofocus>
                 <!--<span v-if="message">
