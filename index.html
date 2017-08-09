@@ -100,7 +100,7 @@
             </style>
     </head>
     <body>
-    <div id="app">
+    <div id="root">
         <div v-if="enabled" v-cloak>
             <form class="search" onsubmit="return false;" v-on:submit="Fetch">                
                 <input type="text" v-model="message" v-on:blur="ClearInputs" autofocus>
@@ -137,7 +137,7 @@
     <script>
 
         const app = new Vue ({
-            el: "#app",
+            el: "#root",
             data: {
                 enabled: true,
                 playerData: "",
